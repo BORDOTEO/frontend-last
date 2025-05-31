@@ -6,18 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
- body {
-  font-family: Arial, sans-serif;
-  background: url('https://i.imgur.com/Fg2KbHy.jpeg') no-repeat center center;
-  background-size: cover;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+      font-family: Arial, sans-serif;
+      background: url('https://i.imgur.com/Fg2KbHy.jpeg') no-repeat center center;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-
+@media (orientation: landscape) {
+    body {
+      padding-bottom: 40px;
+    }
+  }
 
     h1 {
       position: sticky;
