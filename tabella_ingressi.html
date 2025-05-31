@@ -179,6 +179,10 @@
 
     async function caricaDati() {
       try {
+        const params = new URLSearchParams(window.location.search);
+        const strutturaId = params.get("struttura_id");
+        console.log("Struttura ricevuta:", strutturaId);
+        
         const [ingressiRes, gettoneRes] = await Promise.all([
           fetch(API_URL, {
             method: "POST",
@@ -186,15 +190,11 @@
               "Content-Type": "application/x-www-form-urlencoded",
               "x-api-token": API_TOKEN
             },
-            const params = new URLSearchParams(window.location.search);
-            const strutturaId = params.get("struttura_id");
             
             body: new URLSearchParams({
               azione: "mostraTabella",
               struttura_id: strutturaId
             })
-
-
           }),
           fetch(API_URL, {
             method: "POST",
