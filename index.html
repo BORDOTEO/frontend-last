@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SportivaNet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    height: 100%;
+    background-image: url('https://i.imgur.com/Fg2KbHy.jpeg');
+    background-size: cover;
+    background-position: center;
+  }
+
+  body {
+    height: 100%;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+    transform: scale(0.95);
+    transform-origin: top center;
+  }
+
+  .logo {
+    width: 180px;
+    max-width: 90%;
+    height: auto;
+    margin-top: 10px;
+    animation: fadeIn 1s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  h2 {
+    color: #000;
+    font-size: 26px;
+    margin-bottom: 10px;
+  }
+
+  .funzione-btn {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px 24px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: none;
+    cursor: pointer;
+    width: 260px;
+    background-size: 200% auto;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.25),
+                0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  .funzione-btn:hover {
+    transform: scale(1.03) translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                0 6px 14px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-prenotazione {
+    background: linear-gradient(to right, #fff176, #ffee58);
+    color: #000;
+  }
+
+  .btn-ingresso {
+    background: linear-gradient(to right, #aed581, #9ccc65);
+    color: #000;
+  }
+
+  .funzione-desc {
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    max-width: 300px;
+    margin-bottom: 10px;
+  }
+
+  #selezione-iniziale {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 20px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #wrapper {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px;
+    gap: 12px;
+    height: 100vh;
+    overflow-y: auto;
+    justify-content: flex-start;
+  }
+
+  #iframe-wrapper {
+    display: none;
+    width: 100%;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #iframe-tabella {
+    width: 100%;
+    height: calc(100vh - 100px);
+    border: none;
+  }
+
+  button, input, select {
+    font-size: 16px;
+    border-radius: 16px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+  }
+
+  select, input[type="text"], input[type="date"] {
+    width: 260px;
+    background-color: #fff176;
+    border: 1px solid #fdd835;
+  }
+
+  input[type="date"] {
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    padding: 10px;
+    color: #444;
+    background-color: #fff176;
+    border-radius: 10px;
+    border: 1px solid #fbc02d;
+  }
+
+  #menu {
+    text-align: center;
+    font-weight: bold;
+  }
+
+  #menu option {
+    text-align: center;
+  }
+
+  #btn-home {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    font-weight: bold;
+    border: none;
+    width: 260px;
+    padding: 10px;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  #btn-home:hover {
+    filter: brightness(1.1);
+    transform: scale(1.03);
+  }
+
+  #btn-tabella { background-color: #546e7a; color: white; width: 260px; }
+  #btn-inserisci { background-color: #37474f; color: white; width: 260px; }
+  #btn-conferma { background-color: #37474f; color: white; width: 260px; }
+  #btn-registrazione { background-color: #43a047; color: white; width: 260px; }
+  #btn-registrazione:disabled { background-color: #aaa; cursor: not-allowed; }
+
+  #extra-fields {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #extra-fields input[type="date"] {
+    width: 160px;
+  }
+
+  #extra-fields select {
+    width: 90px;
+  }
+
+  .readonly-field {
+    background-color: #e0e0e0;
+    border: 1px solid #bbb;
+  }
+
+  .readonly-field.campo-disabilitato {
+    background-color: #d0d0d0 !important;
+    color: #555 !important;
+    font-style: italic;
+    opacity: 0.6;
+  }
+
+  .readonly-active {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+    font-style: normal;
+  }
+
+  .campo-disabilitato {
+    color: #777;
+    font-style: italic;
+  }
+
+  #error-box, #message-box, #esito-box {
+    max-width: 270px;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    display: none;
+    margin-bottom: 40px;
+  }
+
+  #error-box { background-color: #ffe0e0; color: #900; }
+  #message-box { background-color: #fff3cd; color: #856404; }
+  #esito-box { background-color: #d4edda; color: #155724; }
+
+  @media (max-width: 480px) {
+    .funzione-btn, input, select, button {
+      width: 90%;
+    }
+
+    #extra-fields {
+      flex-wrap: nowrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    #extra-fields input[type="date"] {
+      flex: 1.3;
+      min-width: 140px;
+    }
+
+    #extra-fields select {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .funzione-btn {
+      font-size: 20px;
+    }
+
+    .logo {
+      width: 240px;
+    }
+  }
+
+  /* 👇 Versione desktop: ingrandimento pulsanti e logo */
+  @media (min-width: 481px) {
+  .funzione-btn {
+    font-size: 22px;
+  }
+
+  .logo-iniziale {
+    width: 260px;
+  }
+
+  .logo-inserimento {
+    width: 160px;
+  }
+}
+
+</style>
+
+
+</head>
+<body>
+
+  <!-- BLOCCO LOGIN -->
+  <div id="login-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 16px; padding: 20px;">
+    <img class="logo" src="https://i.imgur.com/G263KeW.png" alt="SportivaNet" />
+    <h2>Accesso struttura</h2>
+    <input type="text" id="login-id" placeholder="Nome struttura" />
+    <input type="password" id="login-password" placeholder="Password" />
+    <button onclick="effettuaLogin()">🔐 Entra</button>
+    <div id="login-error" style="color: red; font-weight: bold; display: none;">Credenziali non valide.</div>
+  </div>
+
+  <!-- INIZIO: Schermata iniziale con pulsanti -->
+  <div id="selezione-iniziale">
+    <img class="logo logo-iniziale" src="https://i.imgur.com/G263KeW.png" alt="SportivaNet" />
+    <h2>Seleziona una funzione</h2>
+    <button id="btn-prenotazione" class="funzione-btn btn-prenotazione">📅 Prenotazione</button>
+    <p class="funzione-desc">Se il cliente vuole prenotare un futuro accesso, clicca su "Prenotazione".</p>
+    <button id="btn-ingresso" class="funzione-btn btn-ingresso">➡️ Ingresso</button>
+    <p class="funzione-desc">Se il cliente è arrivato alla struttura e vuole registrare il suo ingresso ora, clicca su "Ingresso".</p>
+  </div>
+  <!-- FINE: Schermata iniziale -->
+
+  <!-- INIZIO: Sezione wrapper (prenotazione o ingresso) -->
+  <div id="wrapper">
+    <button id="btn-home" onclick="tornaAllaSchermataIniziale()">⬅ Torna indietro</button>
+    <img class="logo logo-inserimento" src="https://i.imgur.com/G263KeW.png" />
+    <button id="btn-tabella" onclick="apriTabella()">📋 Visualizza prenotazioni</button>
+    <select id="menu" onchange="updateInputColor()">
+      <option value="PRENOTAZIONE">PRENOTAZIONE</option>
+      <option value="INGRESSO">INGRESSO</option>
+    </select>
+    <input type="text" id="codice" placeholder="PIN o Codice Ingresso" inputmode="numeric" pattern="[0-9]*" />
+    <button id="btn-inserisci" onclick="sendToSheet()">Inserisci PIN</button>
+    <input type="text" id="nome" placeholder="Nome" readonly class="readonly-field campo-disabilitato" />
+    <input type="text" id="cognome" placeholder="Cognome" readonly class="readonly-field campo-disabilitato" />
+    <div id="extra-fields">
+      <input type="date" id="data" />
+      <select id="orario"></select>
+    </div>
+    <button id="btn-registrazione" onclick="registrazioneFinale()">✅ REGISTRA</button>
+    <div id="esito-box">Inserire PIN</div>
+    <div id="error-box"></div>
+    <div id="message-box"></div>
+  </div>
+  <!-- FINE: wrapper -->
+
+  <!-- INIZIO: Schermata tabella -->
+  <div id="iframe-wrapper">
+    <button id="btn-home" onclick="chiudiTabella()">⬅ Torna indietro</button>
+    <iframe id="iframe-tabella"></iframe>
+  </div>
+
+
+  <script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://cmnrmntmschmqrmhvouw.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtbnJtbnRtc2NobXFybWh2b3V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNDM4OTcsImV4cCI6MjA2MzkxOTg5N30.DOpPC7YZOIbgEXktSvH6Sxg_Zfw_x7-5TNdO680qZ-o'
+    );
+
+    let prenotazioneId = null;
+
+    function apriTabella() {
+      const menuValue = document.getElementById('menu').value;
+      document.getElementById('wrapper').style.display = 'none';
+      document.getElementById('iframe-wrapper').style.display = 'flex';
+
+      document.getElementById('iframe-tabella').src =
+        menuValue === 'INGRESSO' ? 'tabella_ingressi.html' : 'tabella_prenotazioni.html';
+    }
+
+    function chiudiTabella() {
+      document.getElementById('iframe-wrapper').style.display = 'none';
+      document.getElementById('iframe-tabella').src = '';
+      tornaAllaSchermataIniziale();
+    }
+
+    function updateInputColor() {
+      const menu = document.getElementById('menu');
+      const input = document.getElementById('codice');
+      const nome = document.getElementById('nome');
+      const cognome = document.getElementById('cognome');
+      const extraFields = document.getElementById('extra-fields');
+      const dataField = document.getElementById('data');
+      const orarioField = document.getElementById('orario');
+      const bottoneInserisci = document.getElementById('btn-inserisci');
+      const btnTabella = document.getElementById('btn-tabella');
+
+      input.value = '';
+      nome.value = '';
+      cognome.value = '';
+      nome.classList.remove('readonly-active');
+      cognome.classList.remove('readonly-active');
+      nome.classList.add('readonly-field', 'campo-disabilitato');
+      cognome.classList.add('readonly-field', 'campo-disabilitato');
+      document.getElementById('error-box').style.display = 'none';
+      document.getElementById('message-box').style.display = 'none';
+      document.getElementById('esito-box').style.display = 'none';
+
+      const menuValue = menu.value;
+
+      if (menuValue === 'INGRESSO') {
+        input.placeholder = 'Codice Ingresso';
+        input.style.backgroundColor = '#ccffcc';
+        nome.style.backgroundColor = '#ccffcc';
+        cognome.style.backgroundColor = '#ccffcc';
+        menu.style.backgroundColor = '#ccffcc';
+        menu.style.color = '#006600';
+        extraFields.style.display = 'none';
+        bottoneInserisci.textContent = 'Inserisci Codice';
+        btnTabella.textContent = '📋 Visualizza ingressi';
+        document.getElementById('btn-registrazione').disabled = true;
+      } else {
+        input.placeholder = 'PIN';
+        input.style.backgroundColor = 'yellow';
+        nome.style.backgroundColor = 'yellow';
+        cognome.style.backgroundColor = 'yellow';
+        menu.style.backgroundColor = 'yellow';
+        menu.style.color = 'black';
+        extraFields.style.display = 'flex';
+        bottoneInserisci.textContent = 'Inserisci PIN';
+        btnTabella.textContent = '📋 Visualizza prenotazioni';
+
+        const today = new Date().toISOString().split('T')[0];
+        dataField.min = today;
+        dataField.value = ''; // rimuove precompilazione, forza selezione manuale
+
+        orarioField.innerHTML = '<option value="" disabled selected hidden>Orario</option>';
+        for (let i = 0; i < 24; i++) {
+          const option = document.createElement('option');
+          option.value = i.toString().padStart(2, '0') + ":00";
+          option.textContent = option.value;
+          orarioField.appendChild(option);
+        }
+
+        controllaCampi(); // chiamiamo il controllo iniziale
+
+        // Aggiungi prima un'opzione placeholder
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        placeholder.hidden = true;
+        placeholder.textContent = 'Orario';
+        orarioField.appendChild(placeholder);
+
+        // Poi aggiungi gli orari
+        for (let i = 0; i < 24; i++) {
+          const option = document.createElement('option');
+          option.value = i.toString().padStart(2, '0') + ":00";
+          option.textContent = option.value;
+          orarioField.appendChild(option);
+        }
+
+      }
+    }
+
+    function controllaCampi() {
+      const data = document.getElementById('data').value;
+      const orario = document.getElementById('orario').value;
+      const nome = document.getElementById('nome').value;
+      const cognome = document.getElementById('cognome').value;
+      const btn = document.getElementById('btn-registrazione');
+      const menu = document.getElementById('menu').value;
+
+      const pinValido = nome && cognome;
+
+      if (menu === 'PRENOTAZIONE') {
+        btn.disabled = !(pinValido && data && orario);
+      } else {
+        btn.disabled = !pinValido;
+      }
+    }
+
+    function popolaOrari() {
+      const orarioField = document.getElementById('orario');
+      orarioField.innerHTML = '';
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      placeholder.hidden = true;
+      placeholder.textContent = 'Orario';
+      orarioField.appendChild(placeholder);
+
+      for (let i = 0; i < 24; i++) {
+        const option = document.createElement('option');
+        option.value = i.toString().padStart(2, '0') + ":00";
+        option.textContent = option.value;
+        orarioField.appendChild(option);
+      }
+    }
+
+    async function sendToSheet() {
+      const menu = document.getElementById('menu').value;
+      const codice = document.getElementById('codice').value.trim();
+      const nome = document.getElementById('nome');
+      const cognome = document.getElementById('cognome');
+      const errorBox = document.getElementById('error-box');
+      const btnRegistra = document.getElementById('btn-registrazione');
+      const dataField = document.getElementById('data');
+      const orarioField = document.getElementById('orario');
+
+      // Reset iniziale
+      nome.value = '';
+      cognome.value = '';
+      nome.classList.remove('readonly-active');
+      cognome.classList.remove('readonly-active');
+      nome.classList.add('readonly-field', 'campo-disabilitato');
+      cognome.classList.add('readonly-field', 'campo-disabilitato');
+      btnRegistra.disabled = true;
+      errorBox.style.display = 'none';
+
+      // Reset anche dei campi data/orario in modalità prenotazione
+      if (menu === 'PRENOTAZIONE') {
+        dataField.value = '';
+        orarioField.value = '';
+      }
+
+      // Caso: campo vuoto
+      if (!codice) {
+        const messaggioVuoto = menu === 'PRENOTAZIONE' ? 'Inserisci un PIN.' : 'Inserisci un codice.';
+        errorBox.textContent = messaggioVuoto;
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      let utenti, error;
+      if (menu === 'PRENOTAZIONE') {
+        ({ data: utenti, error } = await supabaseClient
+          .from('utenti')
+          .select('*')
+          .eq('pin', codice)
+          .limit(1));
+      } else {
+        ({ data: utenti, error } = await supabaseClient
+          .from('utenti')
+          .select('*')
+          .eq('codice', codice)
+          .limit(1));
+      }
+
+      // Se il PIN/codice è sbagliato
+      if (error || !utenti || utenti.length === 0) {
+        const messaggioErrore = menu === 'PRENOTAZIONE' ? 'PIN non trovato.' : 'Codice non trovato.';
+        errorBox.textContent = messaggioErrore;
+        errorBox.style.display = 'block';
+        prenotazioneId = null;
+
+        // Reset data/orario anche qui per sicurezza
+        if (menu === 'PRENOTAZIONE') {
+          dataField.value = '';
+          orarioField.value = '';
+        }
+
+        return;
+      }
+
+      // Caso: codice valido
+      const utente = utenti[0];
+      prenotazioneId = utente.id;
+      nome.value = utente.nome;
+      cognome.value = utente.cognome;
+      nome.classList.remove('readonly-field', 'campo-disabilitato');
+      cognome.classList.remove('readonly-field', 'campo-disabilitato');
+      nome.classList.add('readonly-active');
+      cognome.classList.add('readonly-active');
+
+      // Attiva il pulsante solo se data e orario sono presenti
+      if (menu === 'PRENOTAZIONE') {
+        controllaCampi();
+      } else {
+        btnRegistra.disabled = false;
+      }
+    }
+
+
+    async function registrazioneFinale() {
+      const menu = document.getElementById('menu').value;
+      const codice = document.getElementById('codice').value;
+      const nome = document.getElementById('nome').value;
+      const cognome = document.getElementById('cognome').value;
+      const esitoBox = document.getElementById('esito-box');
+
+      if (!codice.trim()) {
+        const messaggioVuoto = menu === 'PRENOTAZIONE' ? 'Inserisci un PIN.' : 'Inserisci un codice.';
+        errorBox.textContent = messaggioVuoto;
+        errorBox.style.display = 'block';
+
+        nome.value = '';
+        cognome.value = '';
+        nome.classList.remove('readonly-active');
+        cognome.classList.remove('readonly-active');
+        nome.classList.add('readonly-field', 'campo-disabilitato');
+        cognome.classList.add('readonly-field', 'campo-disabilitato');
+
+        document.getElementById('btn-registrazione').disabled = true;
+        return;
+      }
+
+      if (!nome || !cognome) {
+        esitoBox.textContent = '❌ PIN non trovato. Verifica e riprova.';
+        esitoBox.style.backgroundColor = '#ffcccc';
+        esitoBox.style.display = 'block';
+        return;
+      }
+
+      const struttura_id = localStorage.getItem('struttura_id');
+      const nome_struttura = localStorage.getItem('nome_struttura');
+      const btn = document.getElementById('btn-registrazione');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Attendere...';
+      esitoBox.style.display = 'none';
+
+      try {
+        if (menu === 'PRENOTAZIONE') {
+          const dataPrenotata = document.getElementById('data').value;
+          const orario = document.getElementById('orario').value;
+
+          if (!dataPrenotata || !orario) {
+            throw new Error('Inserisci data e orario per la prenotazione.');
+          }
+
+          // 🔍 Controllo se l'utente ha già prenotato per questa data (qualsiasi struttura)
+      const { data: prenotazioniEsistenti, error: prenotazioniError } = await supabaseClient
+        .from('prenotazioni')
+        .select('id')
+        .eq('utente_id', prenotazioneId)
+        .eq('data_prenotata', dataPrenotata);
+
+      if (prenotazioniError) {
+        throw new Error('Errore nel controllo delle prenotazioni esistenti.');
+      }
+
+      if (prenotazioniEsistenti.length > 0) {
+        throw new Error('Hai già effettuato una prenotazione per questa data.');
+      }
+
+
+          await supabaseClient.from('prenotazioni').insert([{
+            utente_id: prenotazioneId,
+            nome,
+            cognome,
+            nome_struttura,
+            struttura_id,
+            data_prenotata: dataPrenotata,
+            orario
+          }]);
+
+          esitoBox.textContent = '✅ Prenotazione registrata con successo';
+          esitoBox.style.backgroundColor = '#d4edda';
+          esitoBox.style.display = 'block';
+
+
+
+
+        } else if (menu === 'INGRESSO') {
+          const { data: utenti, error: utenteErr } = await supabaseClient
+            .from('utenti')
+            .select('*')
+            .eq('codice', codice)
+            .limit(1);
+
+          if (utenteErr || !utenti || utenti.length === 0) throw new Error('Codice utente non valido.');
+          const utente = utenti[0];
+          const oggi = new Date().toISOString().split('T')[0];
+          const ultimaEntrata = utente.ultima_entrata ? utente.ultima_entrata.split('T')[0] : null;
+
+          if (ultimaEntrata === oggi) {
+            throw new Error('Hai già registrato un ingresso per oggi.');
+          }
+
+          // Blocco se ha già 0 ingressi rimanenti
+          if (utente.ingressi_rimanenti <= 0) {
+            throw new Error('Hai terminato gli ingressi disponibili per questo mese.');
+          }
+
+          const mese = new Date().getMonth() + 1;
+
+          // Recupero gettone struttura
+          const { data: strutturaData } = await supabaseClient
+            .from('strutture')
+            .select('gettone')
+            .eq('id', struttura_id)
+            .single();
+
+          const gettone = strutturaData ? strutturaData.gettone : 0;
+
+          // Inserisco ingresso
+          await supabaseClient.from('ingressi').insert([{
+            utente_id: utente.id,
+            struttura_id,
+            codice: utente.codice,
+            nome: utente.nome,
+            cognome: utente.cognome,
+            nome_struttura,
+            mese,
+            gettone
+          }]);
+
+          // Decremento ingressi rimanenti
+          await supabaseClient
+            .from('utenti')
+            .update({
+              ingressi_rimanenti: utente.ingressi_rimanenti - 1,
+              ultima_entrata: new Date().toISOString()
+            })
+            .eq('id', utente.id);
+
+          esitoBox.textContent = '✅ Ingresso registrato con successo';
+          esitoBox.style.backgroundColor = '#d4edda';
+          esitoBox.style.display = 'block';
+        }
+
+      } catch (err) {
+
+        resetForm();
+
+        esitoBox.textContent = '❌ Errore: ' + err.message;
+        esitoBox.style.backgroundColor = '#ffcccc';
+        esitoBox.style.display = 'block';
+      } finally {
+    // Reset completo dopo registrazione
+
+    resetForm();
+    setTimeout(() => {
+      document.getElementById('esito-box').style.display = 'none';
+    }, 4000);
+
+  }
+
+    }
+
+
+
+    let inattivitaTimer;
+    function resetInattivita() {
+      clearTimeout(inattivitaTimer);
+      const wrapperVisible = document.getElementById('wrapper').style.display !== 'none';
+      const iframeVisible = document.getElementById('iframe-wrapper').style.display !== 'none';
+      if (wrapperVisible && !iframeVisible) {
+        inattivitaTimer = setTimeout(tornaAllaSchermataIniziale, 30000);
+      }
+    }
+
+    function tornaAllaSchermataIniziale() {
+      document.getElementById('wrapper').style.display = 'none';
+      document.getElementById('iframe-wrapper').style.display = 'none';
+      document.getElementById('selezione-iniziale').style.display = 'flex';
+      localStorage.removeItem('tipoAccesso');
+    }
+
+    function iniziaProcedura(tipo) {
+      localStorage.setItem('tipoAccesso', tipo);
+      document.getElementById('selezione-iniziale').style.display = 'none';
+      document.getElementById('wrapper').style.display = 'flex';
+      document.getElementById('menu').value = tipo;
+      updateInputColor();
+      resetInattivita();
+    }
+
+    function resetForm() {
+      const menu = document.getElementById('menu').value;
+      const nome = document.getElementById('nome');
+      const cognome = document.getElementById('cognome');
+      const codice = document.getElementById('codice');
+      const data = document.getElementById('data');
+      const orario = document.getElementById('orario');
+      const btn = document.getElementById('btn-registrazione');
+
+      // Reset campi base
+      codice.value = '';
+      nome.value = '';
+      cognome.value = '';
+      nome.classList.remove('readonly-active');
+      cognome.classList.remove('readonly-active');
+      nome.classList.add('readonly-field', 'campo-disabilitato');
+      cognome.classList.add('readonly-field', 'campo-disabilitato');
+
+      // Reset bottone
+      btn.disabled = true;
+      btn.textContent = '✅ REGISTRA';
+      btn.style.backgroundColor = ''; // lascia che il CSS disattivi
+      btn.style.cursor = ''; // idem
+
+      // Solo se sei in PRENOTAZIONE
+      if (menu === 'PRENOTAZIONE') {
+        data.value = '';
+        orario.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        placeholder.hidden = true;
+        placeholder.textContent = 'Orario';
+        orario.appendChild(placeholder);
+
+        // Ricostruisci orari
+        for (let i = 0; i < 24; i++) {
+          const option = document.createElement('option');
+          option.value = i.toString().padStart(2, '0') + ":00";
+          option.textContent = option.value;
+          orario.appendChild(option);
+        }
+      }
+    }
+
+    async function effettuaLogin() {
+      const id = document.getElementById('login-id').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const errore = document.getElementById('login-error');
+
+      errore.style.display = 'none';
+
+      if (!id || !password) {
+        errore.textContent = 'Inserisci ID e password.';
+        errore.style.display = 'block';
+        return;
+      }
+
+      const { data: strutture, error } = await supabaseClient
+        .from('strutture')
+        .select('*')
+        .eq('nome', id)
+        .eq('password', password)
+        .limit(1);
+
+      if (error || !strutture || strutture.length === 0) {
+        errore.textContent = 'Credenziali non valide.';
+        errore.style.display = 'block';
+        return;
+      }
+
+      const struttura = strutture[0];
+      localStorage.setItem('struttura_id', struttura.id);
+      localStorage.setItem('nome_struttura', struttura.nome);
+
+      document.getElementById('login-wrapper').style.display = 'none';
+      document.getElementById('selezione-iniziale').style.display = 'flex';
+    }
+
+    window.onload = function () {
+  const strutturaId = localStorage.getItem('struttura_id');
+  const tipoSalvato = localStorage.getItem('tipoAccesso');
+
+  if (!strutturaId) {
+    document.getElementById('login-wrapper').style.display = 'flex';
+    document.getElementById('selezione-iniziale').style.display = 'none';
+    document.getElementById('wrapper').style.display = 'none';
+    document.getElementById('iframe-wrapper').style.display = 'none';
+    return;
+  }
+
+  if (tipoSalvato) {
+    iniziaProcedura(tipoSalvato);
+  } else {
+    document.getElementById('selezione-iniziale').style.display = 'flex';
+  }
+
+  document.getElementById('btn-prenotazione').addEventListener('click', () => iniziaProcedura('PRENOTAZIONE'));
+  document.getElementById('btn-ingresso').addEventListener('click', () => iniziaProcedura('INGRESSO'));
+  document.getElementById('data').addEventListener('change', controllaCampi);
+document.getElementById('orario').addEventListener('change', controllaCampi);
+
+
+  document.addEventListener('mousemove', resetInattivita);
+  document.addEventListener('keydown', resetInattivita);
+  document.addEventListener('click', resetInattivita);
+
+  try {
+    if (window.outerHeight < 900 || window.outerWidth < 450) {
+      window.resizeTo(720, 920);
+    }
+  } catch (e) {
+    console.warn("⚠️ Il resize della finestra è stato bloccato dal browser.");
+  }
+};
+
+  </script>
+
+
+</body>
+
+</html>
