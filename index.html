@@ -354,8 +354,13 @@
       document.getElementById('wrapper').style.display = 'none';
       document.getElementById('iframe-wrapper').style.display = 'flex';
 
+     const strutturaId = localStorage.getItem("struttura_id");
+
       document.getElementById('iframe-tabella').src =
-        menuValue === 'INGRESSO' ? 'tabella_ingressi.html' : 'tabella_prenotazioni.html';
+      menuValue === 'INGRESSO'
+      ? `tabella_ingressi.html?struttura_id=${encodeURIComponent(strutturaId)}`
+      : `tabella_prenotazioni.html?struttura_id=${encodeURIComponent(strutturaId)}`;
+
     }
 
     function chiudiTabella() {
