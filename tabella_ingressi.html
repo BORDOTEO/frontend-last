@@ -17,10 +17,12 @@
     }
 
 @media (orientation: landscape) {
-    body {
-      padding-bottom: 40px;
-    }
+  body::after {
+    content: "";
+    display: block;
+    height: 60px;
   }
+}
 
     h1 {
       position: sticky;
@@ -81,9 +83,11 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      margin-bottom: 60px; /* <--- QUESTA È LA NOVITÀ */
       background-color: rgba(255, 255, 255, 0.9);
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
+
 
     thead {
       background-color: #455a64;
