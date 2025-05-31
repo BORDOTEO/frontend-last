@@ -186,10 +186,14 @@
               "Content-Type": "application/x-www-form-urlencoded",
               "x-api-token": API_TOKEN
             },
+            const params = new URLSearchParams(window.location.search);
+            const strutturaId = params.get("struttura_id");
+            
             body: new URLSearchParams({
-            azione: "mostraTabella",
-            struttura_id: localStorage.getItem("struttura_id")
-          })
+              azione: "mostraTabella",
+              struttura_id: strutturaId
+            })
+
 
           }),
           fetch(API_URL, {
