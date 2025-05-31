@@ -7,22 +7,11 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: url('https://i.imgur.com/Fg2KbHy.jpeg') no-repeat center center;
+      background: url('https://i.imgur.com/Fg2KbHy.jpeg') no-repeat center center fixed;
       background-size: cover;
       margin: 0;
       padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
-
-@media (orientation: landscape) {
-  body::after {
-    content: "";
-    display: block;
-    height: 60px;
-  }
-}
 
     h1 {
       position: sticky;
@@ -83,11 +72,9 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      margin-bottom: 60px; /* <--- QUESTA È LA NOVITÀ */
       background-color: rgba(255, 255, 255, 0.9);
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
-
 
     thead {
       background-color: #455a64;
@@ -266,7 +253,6 @@
     filtroMese.addEventListener("change", aggiornaTabella);
     caricaDati();
   </script>
-<footer style="height: 1px; background: red;"></footer>
 
 </body>
 </html>
